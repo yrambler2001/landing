@@ -1,0 +1,6 @@
+.layout {
+  min-height: 100vh !important;
+}
+.content {
+  display: flex;
+}

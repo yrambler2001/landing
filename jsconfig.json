@@ -1,0 +1,8 @@
+{
+  "exclude": ["build", "bin"],
+  "compilerOptions": {
+    "jsx": "react",
+    "baseUrl": "./src"
+  },
+  "include": ["src"]
+}

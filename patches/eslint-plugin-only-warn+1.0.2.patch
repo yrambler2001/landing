@@ -1,0 +1,20 @@
+diff --git a/node_modules/eslint-plugin-only-warn/src/only-warn.js b/node_modules/eslint-plugin-only-warn/src/only-warn.js
+index 32f49bd..bb76d6b 100644
+--- a/node_modules/eslint-plugin-only-warn/src/only-warn.js
++++ b/node_modules/eslint-plugin-only-warn/src/only-warn.js
+@@ -32,11 +32,15 @@ function unpatch(LinterPrototype) {
+ }
+ 
+ function enable() {
++  if (process.env.VSCODE_PID) return;
++  if (process.env._ && process.env._.includes('lint-staged')) return
+   for (const eslint of getEslintModules()) {
+     patch((eslint.Linter && eslint.Linter.prototype) || eslint.linter)
+   }
+ }
+ function disable() {
++  if (process.env.VSCODE_PID) return;
++  if (process.env._ && process.env._.includes('lint-staged')) return
+   for (const eslint of getEslintModules()) {
+     unpatch((eslint.Linter && eslint.Linter.prototype) || eslint.linter)
+   }

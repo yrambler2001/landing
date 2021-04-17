@@ -1,0 +1,13 @@
+diff --git a/node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js b/node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js
+index 057708a..07bf8eb 100644
+--- a/node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js
++++ b/node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js
+@@ -59,7 +59,7 @@ function createDebounceUpdate() {
+     if (typeof refreshTimeout === 'undefined') {
+       refreshTimeout = setTimeout(function () {
+         refreshTimeout = undefined;
+-        Refresh.performReactRefresh();
++        try { Refresh.performReactRefresh(); } catch (e) { console.error(e);window.location.reload() }
+         callback();
+       }, 30);
+     }
