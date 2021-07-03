@@ -7,7 +7,10 @@ import 'react-calendar-timeline/lib/Timeline.css';
 import moment from 'moment';
 import { find, map, sortBy, uniqBy } from 'lodash';
 import { Button, DatePicker, InputNumber, notification, Switch } from 'antd';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { Bar } from '@nivo/bar';
+import useComponentSize from '@rehooks/component-size';
+import { interpolatePlasma, interpolateRainbow } from 'd3-scale-chromatic';
 
 const getCodeToCreatePlaylistWithSongs = ({ name, description = name, uris }) => {
   return `
@@ -137,6 +140,101 @@ const userQuery = gql`
   }
 `;
 
+const BarComponent = ({ bar }) => {
+  const overflowText = bar.width < 500;
+
+  return (
+    <g transform={`translate(${bar.x},${bar.y})`}>
+      <rect x={-3} y={7} width={bar.width} height={bar.height} fill="rgba(0, 0, 0, .07)" />
+      <rect width={bar.width} height={bar.height} fill={interpolatePlasma(bar.width / 1100)} />
+      <rect x={bar.width - 5} width={5} height={bar.height} fill="rgba(0, 0, 0, .07)" fillOpacity={0.2} />
+      <foreignObject
+        x={overflowText ? bar.width : 0}
+        y={bar.height / 2 - 13}
+        style={{
+          textAlign: overflowText ? 'left' : 'right',
+          wordWrap: 'break-word',
+          height: 30,
+          width: overflowText ? '1000px' : bar.width - 40,
+        }}
+        requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+      >
+        <p
+          xmlns="http://www.w3.org/1999/xhtml"
+          style={{
+            fontSize: '17px',
+          }}
+        >
+          {bar.data.data.name}
+        </p>
+      </foreignObject>
+      <text
+        x={bar.width - 16}
+        y={bar.height / 2}
+        textAnchor="end"
+        dominantBaseline="central"
+        fill={interpolateRainbow(bar.width / 1100)}
+        style={{
+          fontWeight: 400,
+          fontSize: 13,
+        }}
+      >
+        {bar.data.value}
+      </text>
+    </g>
+  );
+};
+
+const RaceChart = ({ data }) => {
+  const barData = [...data].slice(0, 100).reverse();
+  const ref = useRef();
+  const { width: actualWidth } = useComponentSize(ref);
+  const width = 1000;
+  const height = barData.length * 40;
+  const allHeight = height; // + 40;
+  const scale = Math.min(actualWidth, 1400) / width;
+  return (
+    <div style={{ overflow: 'hidden' }}>
+      <div
+        ref={ref}
+        style={{
+          transformOrigin: 'top left',
+          transform: `scale(${scale})`,
+          height: allHeight * scale,
+        }}
+      >
+        {/* <h2 style={{ marginLeft: 60, fontWeight: 400, color: '#555' }}>
+        </h2> */}
+        <Bar
+          width={1000}
+          height={height}
+          layout="horizontal"
+          margin={{ top: 26, right: 26, bottom: 26, left: 26 }}
+          data={barData}
+          indexBy="id"
+          keys={['value']}
+          colors={{ scheme: 'blues' }}
+          colorBy="indexValue"
+          borderColor={{ from: 'color', modifiers: [['darker', 2.6]] }}
+          // enableGridX
+          enableGridY={false}
+          axisTop={{
+            format: '~s',
+          }}
+          axisBottom={{
+            format: '~s',
+          }}
+          axisLeft={null}
+          padding={0.3}
+          labelTextColor={{ from: 'color', modifiers: [['darker', 1.4]] }}
+          isInteractive={false}
+          barComponent={BarComponent}
+        />
+      </div>
+    </div>
+  );
+};
+
 export default function Spotify(props) {
   const {
     match: {
@@ -184,6 +282,12 @@ export default function Spotify(props) {
       })),
     [data?.spotifySongsByUser, endDate, startDate],
   );
+  const songsWithFilteredTimestampsSortedByMostListened = useMemo(
+    () => sortBy(songsWithFilteredTimestamps, 'timestamps.length').reverse(),
+    [songsWithFilteredTimestamps],
+  );
+
+  // window.songsWithFilteredTimestampsSortedByMostListened = songsWithFilteredTimestampsSortedByMostListened;
   const timestampsWithSongs = useMemo(
     () =>
       sortBy(
@@ -207,6 +311,15 @@ export default function Spotify(props) {
         end_time: new Date(songWithTimestamp.timestamp),
       })),
     [numberOfRows, timestampsWithSongs],
+  );
+  const chartData = useMemo(
+    () =>
+      songsWithFilteredTimestampsSortedByMostListened.map((songWithTimestamp, index) => ({
+        name: `${songWithTimestamp.song.artistName} - ${songWithTimestamp.song.name}`,
+        id: index,
+        value: songWithTimestamp.timestamps.length,
+      })),
+    [songsWithFilteredTimestampsSortedByMostListened],
   );
   if (user.loading) return 'loading...';
   const userName = user?.data?.spotifyUser?.name || 'User';
@@ -237,8 +350,7 @@ export default function Spotify(props) {
         </Button>
         <Button
           onClick={() => {
-            const uniqueSongsFromMostListened = sortBy(songsWithFilteredTimestamps, 'timestamps.length').reverse();
-            const uniqueSongsFromLatestUris = uniqueSongsFromMostListened.map((e) => e._id);
+            const uniqueSongsFromLatestUris = songsWithFilteredTimestampsSortedByMostListened.map((e) => e.song._id);
             const stringToCreatePlaylist = getCodeToCreatePlaylistWithSongs({
               name: `${userName}'s songs in ${moment(date).format('MM.YYYY')} from most listened to least listened`,
               uris: uniqueSongsFromLatestUris,
@@ -288,6 +400,7 @@ export default function Spotify(props) {
           // console.log(item);
         }}
       />
+      <RaceChart key={date} data={chartData} />
     </div>
   );
 }
