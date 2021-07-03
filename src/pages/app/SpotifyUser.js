@@ -272,6 +272,7 @@ export default function Spotify(props) {
         canResize={false}
         itemHeightRatio={0.95}
         lineHeight={35}
+        sidebarWidth={30}
         itemRenderer={itemRenderer}
         groups={groups}
         items={items}
