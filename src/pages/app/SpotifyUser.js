@@ -266,7 +266,7 @@ export default function Spotify(props) {
       <br />
       Use Command/Control + mouse wheel to scale the timeline
       <Timeline
-        itemTouchSendsClick
+        // itemTouchSendsClick
         canMove={false}
         canChangeGroup={false}
         canResize={false}
@@ -275,6 +275,8 @@ export default function Spotify(props) {
         itemRenderer={itemRenderer}
         groups={groups}
         items={items}
+        minZoom={(60 * 60 * 1000) / 10} // 1/10 of hour
+        maxZoom={365.24 * 86400 * 1000} // 1 year
         defaultTimeStart={startDate}
         defaultTimeEnd={endDate}
         // selected={emptyArray}
