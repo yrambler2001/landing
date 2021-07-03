@@ -1,6 +1,8 @@
 import { Switch, Route, Redirect } from 'react-router-dom';
 import AuthLayout from 'components/layouts/AuthLayout';
 import Home from 'pages/app/Home';
+import Spotify from 'pages/app/Spotify';
+import SpotifyUser from 'pages/app/SpotifyUser';
 import ScrollToTop from 'components/common/ScrollToTop';
 import NotFoundPage from 'pages/NotFound';
 
@@ -8,6 +10,14 @@ export const routes = [
   {
     path: '/',
     component: Home,
+  },
+  {
+    path: '/spotify',
+    component: Spotify,
+  },
+  {
+    path: '/spotify/:id',
+    component: SpotifyUser,
   },
 ];
 
