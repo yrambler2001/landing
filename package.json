@@ -36,6 +36,7 @@
     "graphql": "15.0.0",
     "graphql-tag": "2.10.3",
     "http-proxy-middleware": "1.0.6",
+    "interactjs": "^1.10.11",
     "lodash": "4.17.20",
     "moment": "2.29.1",
     "normalize.css": "8.0.1",
