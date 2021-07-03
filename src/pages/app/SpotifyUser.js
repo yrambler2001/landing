@@ -264,7 +264,7 @@ export default function Spotify(props) {
         </div>
       </div>
       <br />
-      Use Command/Control + mouse wheel to scale the timeline
+      Use Command/Control + mouse wheel to scale the timeline. Use shift + mouse wheel to move the timeline.
       <Timeline
         // itemTouchSendsClick
         canMove={false}
