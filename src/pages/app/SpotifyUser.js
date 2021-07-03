@@ -6,10 +6,10 @@ import Timeline from 'react-calendar-timeline';
 import 'react-calendar-timeline/lib/Timeline.css';
 import moment from 'moment';
 import { find, map, sortBy, uniqBy } from 'lodash';
-import { Button, DatePicker } from 'antd';
+import { Button, DatePicker, InputNumber, notification, Switch } from 'antd';
 import { useMemo, useState } from 'react';
 
-const getCodeToCreatePlaylistWithSongs = (name, uris) => {
+const getCodeToCreatePlaylistWithSongs = ({ name, description = name, uris }) => {
   return `
   // HOW TO USE:
   // 1. Open developer tools in your browser
@@ -80,7 +80,7 @@ const getCodeToCreatePlaylistWithSongs = (name, uris) => {
       url: \`https://api.spotify.com/v1/users/\${me.id}/playlists\`,
       data: {
         name: ${JSON.stringify(name)},
-        description: ${JSON.stringify(name)},
+        description: ${JSON.stringify(description)},
         public: true,
       },
     });
@@ -137,9 +137,6 @@ const userQuery = gql`
   }
 `;
 
-const groupsCount = 20;
-const groups = new Array(20).fill(null).map((e, index) => ({ id: index, title: index + 1 }));
-
 export default function Spotify(props) {
   const {
     match: {
@@ -147,6 +144,12 @@ export default function Spotify(props) {
     },
   } = props;
   const [date, setDate] = useState(moment());
+  const [openOnClick, setOpenOnClick] = useState(false);
+  const [numberOfRows, setNumberOfRows] = useState(20);
+  const groups = useMemo(
+    () => new Array(numberOfRows).fill(null).map((e, index) => ({ id: index, title: index + 1 })),
+    [numberOfRows],
+  );
   const startDate = useMemo(
     () =>
       moment(date)
@@ -196,45 +199,72 @@ export default function Spotify(props) {
       timestampsWithSongs.map((songWithTimestamp, index) => ({
         id: `${songWithTimestamp._id}_${songWithTimestamp.timestamp}`,
         url: `https://open.spotify.com/track/${songWithTimestamp._id.replace('spotify:track:', '')}?si=`,
-        group: index % groupsCount,
+        group: index % numberOfRows,
         title: songWithTimestamp.name,
         artist: songWithTimestamp.artistName,
         img: songWithTimestamp.imageUrl,
         start_time: new Date(songWithTimestamp.timestamp),
         end_time: new Date(songWithTimestamp.timestamp),
       })),
-    [timestampsWithSongs],
+    [numberOfRows, timestampsWithSongs],
   );
   if (user.loading) return 'loading...';
+  const userName = user?.data?.spotifyUser?.name || 'User';
   return (
     <div className="container">
       <h1>{user?.data?.spotifyUser?.name}&apos;s Spotify songs</h1>
-      <DatePicker value={date} onChange={setDate} picker="month" />
-      {loading ? 'Loading...' : null}
-      <Button
-        onClick={() => {
-          const uniqueSongsFromNewest = uniqBy([...timestampsWithSongs].reverse(), '_id');
-          const uniqueSongsFromNewestUris = uniqueSongsFromNewest.map((e) => e._id);
-          const stringToCreatePlaylist = getCodeToCreatePlaylistWithSongs('a123', uniqueSongsFromNewestUris);
-          // console.log(stringToCreatePlaylist);
-          navigator.clipboard.writeText(stringToCreatePlaylist);
-        }}
-      >
-        From newest to oldest
-      </Button>
-      <Button
-        onClick={() => {
-          const uniqueSongsFromMostListened = sortBy(songsWithFilteredTimestamps, 'timestamps.length').reverse();
-          const uniqueSongsFromLatestUris = uniqueSongsFromMostListened.map((e) => e._id);
-          const stringToCreatePlaylist = getCodeToCreatePlaylistWithSongs('a123', uniqueSongsFromLatestUris);
-          // console.log(stringToCreatePlaylist);
-          navigator.clipboard.writeText(stringToCreatePlaylist);
-        }}
-      >
-        From most listened to least listened
-      </Button>
+      <div className="spotify-controls">
+        <DatePicker value={date} onChange={setDate} picker="month" />
+        {loading ? 'Loading...' : null}
+        <Button
+          onClick={() => {
+            const uniqueSongsFromNewest = uniqBy([...timestampsWithSongs].reverse(), '_id');
+            const uniqueSongsFromNewestUris = uniqueSongsFromNewest.map((e) => e._id);
+            const stringToCreatePlaylist = getCodeToCreatePlaylistWithSongs({
+              name: `${userName}'s songs in ${moment(date).format('MM.YYYY')} from newest to oldest`,
+              uris: uniqueSongsFromNewestUris,
+            });
+            // console.log(stringToCreatePlaylist);
+            navigator.clipboard.writeText(stringToCreatePlaylist);
+            notification.success({
+              message: 'Copied to clipboard',
+              description:
+                'Please open the Spotify web player in browser, open developer tools console and paste the code into console.',
+            });
+          }}
+        >
+          From newest to oldest
+        </Button>
+        <Button
+          onClick={() => {
+            const uniqueSongsFromMostListened = sortBy(songsWithFilteredTimestamps, 'timestamps.length').reverse();
+            const uniqueSongsFromLatestUris = uniqueSongsFromMostListened.map((e) => e._id);
+            const stringToCreatePlaylist = getCodeToCreatePlaylistWithSongs({
+              name: `${userName}'s songs in ${moment(date).format('MM.YYYY')} from most listened to least listened`,
+              uris: uniqueSongsFromLatestUris,
+            });
+            // console.log(stringToCreatePlaylist);
+            navigator.clipboard.writeText(stringToCreatePlaylist);
+            notification.success({
+              message: 'Copied to clipboard',
+              description:
+                'Please open the Spotify web player in browser, open developer tools console and paste the code into console.',
+            });
+          }}
+        >
+          From most listened to least listened
+        </Button>
+        <div>
+          <span>Open song on click</span>
+          <Switch checked={openOnClick} onChange={setOpenOnClick} />
+        </div>
+        <div>
+          <span>Rows</span>
+          <InputNumber min={1} value={numberOfRows} onChange={setNumberOfRows} />
+        </div>
+      </div>
       <br />
-      <br />
+      Use Command/Control + mouse wheel to scale the timeline
       <Timeline
         itemTouchSendsClick
         canMove={false}
@@ -249,6 +279,7 @@ export default function Spotify(props) {
         defaultTimeEnd={endDate}
         // selected={emptyArray}
         onItemClick={(itemId) => {
+          if (!openOnClick) return;
           const item = find(items, { id: itemId });
           window.open(item.url, '_blank').focus();
           // console.log(item);

@@ -1,7 +1,18 @@
+import { FaSpotify } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+
 export default function Home() {
   return (
     <div className="container">
       <h1>TODO: Home page</h1>
+      <h2>
+        <Link to="/spotify" className="spotify-row">
+          <span className="spotify-icon-container">
+            <FaSpotify className="spotify-icon" />
+          </span>
+          <span>Look what I&apos;m listening to right now ...</span>
+        </Link>
+      </h2>
       <iframe
         className="youtube-iframe"
         width="1014"
