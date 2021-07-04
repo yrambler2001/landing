@@ -11,6 +11,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Bar } from '@nivo/bar';
 import useComponentSize from '@rehooks/component-size';
 import { interpolatePlasma, interpolateRainbow, interpolateRdYlBu } from 'd3-scale-chromatic';
+import { DownOutlined, LeftOutlined, MinusOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 
 const getCodeToCreatePlaylistWithSongs = ({ name, description = name, uris }) => {
   return `
@@ -350,14 +351,16 @@ export default function Spotify(props) {
       })),
     [timestampsWithSongsFilteredSongPauseResumeBySongs],
   );
+  const timelineRef = useRef();
   if (user.loading) return 'loading...';
   const userName = user?.data?.spotifyUser?.name || 'User';
   return (
     <div className="container">
-      <h1>{user?.data?.spotifyUser?.name}&apos;s Spotify songs</h1>
-      <div className="spotify-controls">
+      <h1>
+        {user?.data?.spotifyUser?.name}&apos;s Spotify songs {loading ? 'loading...' : null}
+      </h1>
+      <div className="spotify-controls margin-bottom-10">
         <DatePicker value={date} onChange={setDate} picker="month" />
-        {loading ? 'Loading...' : null}
         <Button
           onClick={() => {
             const uniqueSongsFromNewest = uniqBy([...timestampsWithSongs].reverse(), '_id');
@@ -402,9 +405,65 @@ export default function Spotify(props) {
           <InputNumber min={1} value={numberOfRows} onChange={setNumberOfRows} />
         </div>
       </div>
-      <br />
-      Use Command/Control + mouse wheel to scale the timeline. Use shift + mouse wheel to move the timeline.
+      <div className="margin-bottom-10">
+        <Button
+          icon={<LeftOutlined />}
+          onClick={() => {
+            const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
+            timelineRef.current.updateScrollCanvas(
+              timelineRef.current.state.visibleTimeStart - delta * 0.3,
+              timelineRef.current.state.visibleTimeEnd - delta * 0.3,
+            );
+          }}
+        />
+        <Button
+          icon={<DownOutlined />}
+          onClick={() => {
+            const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
+            const half = delta / 2;
+            const currentDate = +new Date();
+            timelineRef.current.updateScrollCanvas(currentDate - half, currentDate + half);
+          }}
+        />
+        <Button
+          icon={<RightOutlined />}
+          onClick={() => {
+            const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
+            timelineRef.current.updateScrollCanvas(
+              timelineRef.current.state.visibleTimeStart + delta * 0.3,
+              timelineRef.current.state.visibleTimeEnd + delta * 0.3,
+            );
+          }}
+        />
+        <Button
+          icon={<PlusOutlined />}
+          onClick={() => {
+            const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
+            if (delta < 500000) return;
+            timelineRef.current.updateScrollCanvas(
+              timelineRef.current.state.visibleTimeStart + delta * 0.3,
+              timelineRef.current.state.visibleTimeEnd - delta * 0.3,
+            );
+          }}
+        />
+        <Button
+          icon={<MinusOutlined />}
+          onClick={() => {
+            const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
+            if (delta > 5000000000) return;
+            timelineRef.current.updateScrollCanvas(
+              timelineRef.current.state.visibleTimeStart - delta * 0.3,
+              timelineRef.current.state.visibleTimeEnd + delta * 0.3,
+            );
+          }}
+        />
+        <span className="margin-left-10">
+          You can also use Command/Control + mouse wheel to scale the timeline, use shift + mouse wheel to move the
+          timeline.
+        </span>
+      </div>
       <Timeline
+        ref={timelineRef}
         // itemTouchSendsClick
         canMove={false}
         canChangeGroup={false}

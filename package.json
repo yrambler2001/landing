@@ -18,6 +18,7 @@
     "test": "craco test"
   },
   "dependencies": {
+    "@ant-design/icons": "^4.6.2",
     "@apollo/react-hooks": "3.1.5",
     "@craco/craco": "6.0.0",
     "@nivo/bar": "^0.72.0",
