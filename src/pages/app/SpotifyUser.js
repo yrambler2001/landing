@@ -10,7 +10,7 @@ import { Button, DatePicker, InputNumber, notification, Switch } from 'antd';
 import { useMemo, useRef, useState } from 'react';
 import { Bar } from '@nivo/bar';
 import useComponentSize from '@rehooks/component-size';
-import { interpolatePlasma, interpolateRainbow } from 'd3-scale-chromatic';
+import { interpolatePlasma, interpolateRainbow, interpolateRdYlBu } from 'd3-scale-chromatic';
 
 const getCodeToCreatePlaylistWithSongs = ({ name, description = name, uris }) => {
   return `
@@ -97,8 +97,15 @@ const getCodeToCreatePlaylistWithSongs = ({ name, description = name, uris }) =>
   })();`.trim();
 };
 const itemRenderer = ({ item, itemContext, getItemProps }) => {
+  const itemProps = getItemProps(item.itemProps);
   return (
-    <div {...getItemProps(item.itemProps)}>
+    <div
+      {...itemProps}
+      style={{
+        ...itemProps.style,
+        background: interpolateRdYlBu((item.nextTimestamp - item.start_time) / (2 * 1000 * 60) || 1),
+      }}
+    >
       <div className="rct-item-content" style={{ maxHeight: `${itemContext.dimensions.height}` }}>
         {/* <a target="_blank" rel="noopener noreferrer" href={item.url}> */}
         <img alt="" src={item.img} />
@@ -309,7 +316,7 @@ export default function Spotify(props) {
 
   const items = useMemo(
     () =>
-      timestampsWithSongsFilteredSongPauseResume.map((songWithTimestamp, index) => ({
+      timestampsWithSongsFilteredSongPauseResume.map((songWithTimestamp, index, array) => ({
         id: `${songWithTimestamp._id}_${songWithTimestamp.timestamp}`,
         url: `https://open.spotify.com/track/${songWithTimestamp._id.replace('spotify:track:', '')}?si=`,
         group: index % numberOfRows,
@@ -318,6 +325,7 @@ export default function Spotify(props) {
         img: songWithTimestamp.imageUrl,
         start_time: new Date(songWithTimestamp.timestamp),
         end_time: new Date(songWithTimestamp.timestamp),
+        nextTimestamp: new Date(array[index + 1]?.timestamp),
       })),
     [numberOfRows, timestampsWithSongsFilteredSongPauseResume],
   );
