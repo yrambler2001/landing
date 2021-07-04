@@ -417,6 +417,7 @@ export default function Spotify(props) {
       <div className="margin-bottom-10">
         <Tooltip title="Scroll to the left">
           <Button
+            className="margin-right-5"
             icon={<LeftOutlined />}
             onClick={() => {
               const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
@@ -427,19 +428,9 @@ export default function Spotify(props) {
             }}
           />
         </Tooltip>
-        <Tooltip title="Scroll to current day">
-          <Button
-            icon={<DownOutlined />}
-            onClick={() => {
-              const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
-              const half = delta / 2;
-              const currentDate = +new Date();
-              timelineRef.current.updateScrollCanvas(currentDate - half, currentDate + half);
-            }}
-          />
-        </Tooltip>
         <Tooltip title="Scroll to the right">
           <Button
+            className="margin-right-5"
             icon={<RightOutlined />}
             onClick={() => {
               const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
@@ -452,6 +443,7 @@ export default function Spotify(props) {
         </Tooltip>
         <Tooltip title="Zoom in">
           <Button
+            className="margin-right-5"
             icon={<PlusOutlined />}
             onClick={() => {
               const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
@@ -465,6 +457,7 @@ export default function Spotify(props) {
         </Tooltip>
         <Tooltip title="Zoom out">
           <Button
+            className="margin-right-20"
             icon={<MinusOutlined />}
             onClick={() => {
               const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
@@ -476,8 +469,21 @@ export default function Spotify(props) {
             }}
           />
         </Tooltip>
+        <Tooltip title="Scroll to current day">
+          <Button
+            className="margin-right-5"
+            icon={<DownOutlined />}
+            onClick={() => {
+              const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
+              const half = delta / 2;
+              const currentDate = +new Date();
+              timelineRef.current.updateScrollCanvas(currentDate - half, currentDate + half);
+            }}
+          />
+        </Tooltip>
         <Tooltip title="Scroll to selected month">
           <Button
+            className="margin-right-5"
             icon={<ColumnWidthOutlined />}
             onClick={() => {
               timelineRef.current.updateScrollCanvas(+startDate, +endDate);
@@ -486,6 +492,7 @@ export default function Spotify(props) {
         </Tooltip>
         <Tooltip title="Scroll to zoomed selected month">
           <Button
+            className="margin-right-5"
             icon={<ArrowsAltOutlined />}
             onClick={() => {
               const range = +endDate - +startDate;
