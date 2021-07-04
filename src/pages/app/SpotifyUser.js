@@ -6,12 +6,20 @@ import Timeline from 'react-calendar-timeline';
 import 'react-calendar-timeline/lib/Timeline.css';
 import moment from 'moment';
 import { find, groupBy, map, sortBy, uniqBy } from 'lodash';
-import { Button, DatePicker, InputNumber, notification, Switch } from 'antd';
+import { Button, DatePicker, InputNumber, notification, Switch, Tooltip } from 'antd';
 import { useMemo, useRef, useState } from 'react';
 import { Bar } from '@nivo/bar';
 import useComponentSize from '@rehooks/component-size';
 import { interpolatePlasma, interpolateRainbow, interpolateRdYlBu } from 'd3-scale-chromatic';
-import { DownOutlined, LeftOutlined, MinusOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
+import {
+  ArrowsAltOutlined,
+  ColumnWidthOutlined,
+  DownOutlined,
+  LeftOutlined,
+  MinusOutlined,
+  PlusOutlined,
+  RightOutlined,
+} from '@ant-design/icons';
 
 const getCodeToCreatePlaylistWithSongs = ({ name, description = name, uris }) => {
   return `
@@ -407,57 +415,84 @@ export default function Spotify(props) {
         </div>
       </div>
       <div className="margin-bottom-10">
-        <Button
-          icon={<LeftOutlined />}
-          onClick={() => {
-            const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
-            timelineRef.current.updateScrollCanvas(
-              timelineRef.current.state.visibleTimeStart - delta * 0.3,
-              timelineRef.current.state.visibleTimeEnd - delta * 0.3,
-            );
-          }}
-        />
-        <Button
-          icon={<DownOutlined />}
-          onClick={() => {
-            const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
-            const half = delta / 2;
-            const currentDate = +new Date();
-            timelineRef.current.updateScrollCanvas(currentDate - half, currentDate + half);
-          }}
-        />
-        <Button
-          icon={<RightOutlined />}
-          onClick={() => {
-            const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
-            timelineRef.current.updateScrollCanvas(
-              timelineRef.current.state.visibleTimeStart + delta * 0.3,
-              timelineRef.current.state.visibleTimeEnd + delta * 0.3,
-            );
-          }}
-        />
-        <Button
-          icon={<PlusOutlined />}
-          onClick={() => {
-            const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
-            if (delta < 500000) return;
-            timelineRef.current.updateScrollCanvas(
-              timelineRef.current.state.visibleTimeStart + delta * 0.3,
-              timelineRef.current.state.visibleTimeEnd - delta * 0.3,
-            );
-          }}
-        />
-        <Button
-          icon={<MinusOutlined />}
-          onClick={() => {
-            const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
-            if (delta > 5000000000) return;
-            timelineRef.current.updateScrollCanvas(
-              timelineRef.current.state.visibleTimeStart - delta * 0.3,
-              timelineRef.current.state.visibleTimeEnd + delta * 0.3,
-            );
-          }}
-        />
+        <Tooltip title="Scroll to the left">
+          <Button
+            icon={<LeftOutlined />}
+            onClick={() => {
+              const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
+              timelineRef.current.updateScrollCanvas(
+                timelineRef.current.state.visibleTimeStart - delta * 0.3,
+                timelineRef.current.state.visibleTimeEnd - delta * 0.3,
+              );
+            }}
+          />
+        </Tooltip>
+        <Tooltip title="Scroll to current day">
+          <Button
+            icon={<DownOutlined />}
+            onClick={() => {
+              const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
+              const half = delta / 2;
+              const currentDate = +new Date();
+              timelineRef.current.updateScrollCanvas(currentDate - half, currentDate + half);
+            }}
+          />
+        </Tooltip>
+        <Tooltip title="Scroll to the right">
+          <Button
+            icon={<RightOutlined />}
+            onClick={() => {
+              const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
+              timelineRef.current.updateScrollCanvas(
+                timelineRef.current.state.visibleTimeStart + delta * 0.3,
+                timelineRef.current.state.visibleTimeEnd + delta * 0.3,
+              );
+            }}
+          />
+        </Tooltip>
+        <Tooltip title="Zoom in">
+          <Button
+            icon={<PlusOutlined />}
+            onClick={() => {
+              const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
+              if (delta < 500000) return;
+              timelineRef.current.updateScrollCanvas(
+                timelineRef.current.state.visibleTimeStart + delta * 0.3,
+                timelineRef.current.state.visibleTimeEnd - delta * 0.3,
+              );
+            }}
+          />
+        </Tooltip>
+        <Tooltip title="Zoom out">
+          <Button
+            icon={<MinusOutlined />}
+            onClick={() => {
+              const delta = timelineRef.current.state.visibleTimeEnd - timelineRef.current.state.visibleTimeStart;
+              if (delta > 5000000000) return;
+              timelineRef.current.updateScrollCanvas(
+                timelineRef.current.state.visibleTimeStart - delta * 0.3,
+                timelineRef.current.state.visibleTimeEnd + delta * 0.3,
+              );
+            }}
+          />
+        </Tooltip>
+        <Tooltip title="Scroll to selected month">
+          <Button
+            icon={<ColumnWidthOutlined />}
+            onClick={() => {
+              timelineRef.current.updateScrollCanvas(+startDate, +endDate);
+            }}
+          />
+        </Tooltip>
+        <Tooltip title="Scroll to zoomed selected month">
+          <Button
+            icon={<ArrowsAltOutlined />}
+            onClick={() => {
+              const range = +endDate - +startDate;
+              timelineRef.current.updateScrollCanvas(+startDate + range / 2.5, +endDate - range / 2.5);
+            }}
+          />
+        </Tooltip>
         <span className="margin-left-10">
           You can also use Command/Control + mouse wheel to scale the timeline, use shift + mouse wheel to move the
           timeline.
