@@ -163,12 +163,14 @@ const BarComponent = ({ bar }) => {
           wordWrap: 'break-word',
           height: 30,
           width: overflowText ? '1000px' : bar.width - 40,
+          overflow: 'visible',
         }}
         requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
       >
         <p
           xmlns="http://www.w3.org/1999/xhtml"
           style={{
+            width: overflowText ? '1000px' : bar.width - 40,
             fontSize: '17px',
           }}
         >
@@ -372,7 +374,7 @@ export default function Spotify(props) {
             });
           }}
         >
-          From newest to oldest
+          Create playlist from newest to oldest
         </Button>
         <Button
           onClick={() => {
@@ -389,7 +391,7 @@ export default function Spotify(props) {
             });
           }}
         >
-          From most listened to least listened
+          Create playlist from most listened to least listened
         </Button>
         <div>
           <span>Open song on click</span>
