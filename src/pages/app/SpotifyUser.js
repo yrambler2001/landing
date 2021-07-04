@@ -258,6 +258,7 @@ export default function Spotify(props) {
     () => new Array(numberOfRows).fill(null).map((e, index) => ({ id: index, title: index + 1 })),
     [numberOfRows],
   );
+  const [defaultStart, defaultEnd] = useMemo(() => [+new Date() - 10000000, +new Date() + 10000000], []);
   const startDate = useMemo(
     () =>
       moment(date)
@@ -476,8 +477,8 @@ export default function Spotify(props) {
         items={items}
         minZoom={(60 * 60 * 1000) / 10} // 1/10 of hour
         maxZoom={365.24 * 86400 * 1000} // 1 year
-        defaultTimeStart={startDate}
-        defaultTimeEnd={endDate}
+        defaultTimeStart={defaultStart}
+        defaultTimeEnd={defaultEnd}
         // selected={emptyArray}
         onItemClick={(itemId) => {
           if (!openOnClick) return;
