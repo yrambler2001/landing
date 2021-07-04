@@ -5,7 +5,7 @@ import gql from 'graphql-tag';
 import Timeline from 'react-calendar-timeline';
 import 'react-calendar-timeline/lib/Timeline.css';
 import moment from 'moment';
-import { find, map, sortBy, uniqBy } from 'lodash';
+import { find, groupBy, map, sortBy, uniqBy } from 'lodash';
 import { Button, DatePicker, InputNumber, notification, Switch } from 'antd';
 import { useMemo, useRef, useState } from 'react';
 import { Bar } from '@nivo/bar';
@@ -272,7 +272,6 @@ export default function Spotify(props) {
       endDate,
     },
   });
-  // window.data = data;
 
   const songsWithFilteredTimestamps = useMemo(
     () =>
@@ -282,12 +281,7 @@ export default function Spotify(props) {
       })),
     [data?.spotifySongsByUser, endDate, startDate],
   );
-  const songsWithFilteredTimestampsSortedByMostListened = useMemo(
-    () => sortBy(songsWithFilteredTimestamps, 'timestamps.length').reverse(),
-    [songsWithFilteredTimestamps],
-  );
 
-  // window.songsWithFilteredTimestampsSortedByMostListened = songsWithFilteredTimestampsSortedByMostListened;
   const timestampsWithSongs = useMemo(
     () =>
       sortBy(
@@ -298,9 +292,24 @@ export default function Spotify(props) {
       ),
     [songsWithFilteredTimestamps],
   );
+  const timestampsWithSongsFilteredSongPauseResume = useMemo(
+    () =>
+      timestampsWithSongs.reduce((prev, curr) => {
+        const lastSong = prev[prev.length - 1];
+        if (
+          lastSong &&
+          lastSong._id === curr._id &&
+          new Date(curr.timestamp) - new Date(lastSong.timestamp) < 1000 * 60 * 2 // remove items that are repeated more often that 2 minutes
+        )
+          return prev;
+        return [...prev, curr];
+      }, []),
+    [timestampsWithSongs],
+  );
+
   const items = useMemo(
     () =>
-      timestampsWithSongs.map((songWithTimestamp, index) => ({
+      timestampsWithSongsFilteredSongPauseResume.map((songWithTimestamp, index) => ({
         id: `${songWithTimestamp._id}_${songWithTimestamp.timestamp}`,
         url: `https://open.spotify.com/track/${songWithTimestamp._id.replace('spotify:track:', '')}?si=`,
         group: index % numberOfRows,
@@ -310,16 +319,26 @@ export default function Spotify(props) {
         start_time: new Date(songWithTimestamp.timestamp),
         end_time: new Date(songWithTimestamp.timestamp),
       })),
-    [numberOfRows, timestampsWithSongs],
+    [numberOfRows, timestampsWithSongsFilteredSongPauseResume],
   );
+  const timestampsWithSongsFilteredSongPauseResumeBySongs = sortBy(
+    Object.values(groupBy(timestampsWithSongsFilteredSongPauseResume, '_id')),
+    'length',
+  )
+    .reverse()
+    .map((songsWithTimestamps) => ({
+      ...songsWithTimestamps[0],
+      timestamps: songsWithTimestamps.map((songWithTimestamp) => songWithTimestamp.timestamp),
+    }));
+
   const chartData = useMemo(
     () =>
-      songsWithFilteredTimestampsSortedByMostListened.map((songWithTimestamp, index) => ({
-        name: `${songWithTimestamp.song.artistName} - ${songWithTimestamp.song.name}`,
+      timestampsWithSongsFilteredSongPauseResumeBySongs.map((songWithTimestamps, index) => ({
+        name: `${songWithTimestamps.artistName} - ${songWithTimestamps.name}`,
         id: index,
-        value: songWithTimestamp.timestamps.length,
+        value: songWithTimestamps.timestamps.length,
       })),
-    [songsWithFilteredTimestampsSortedByMostListened],
+    [timestampsWithSongsFilteredSongPauseResumeBySongs],
   );
   if (user.loading) return 'loading...';
   const userName = user?.data?.spotifyUser?.name || 'User';
@@ -337,7 +356,6 @@ export default function Spotify(props) {
               name: `${userName}'s songs in ${moment(date).format('MM.YYYY')} from newest to oldest`,
               uris: uniqueSongsFromNewestUris,
             });
-            // console.log(stringToCreatePlaylist);
             navigator.clipboard.writeText(stringToCreatePlaylist);
             notification.success({
               message: 'Copied to clipboard',
@@ -350,12 +368,11 @@ export default function Spotify(props) {
         </Button>
         <Button
           onClick={() => {
-            const uniqueSongsFromLatestUris = songsWithFilteredTimestampsSortedByMostListened.map((e) => e.song._id);
+            const uniqueSongsFromMostListenedUris = timestampsWithSongsFilteredSongPauseResumeBySongs.map((e) => e._id);
             const stringToCreatePlaylist = getCodeToCreatePlaylistWithSongs({
               name: `${userName}'s songs in ${moment(date).format('MM.YYYY')} from most listened to least listened`,
-              uris: uniqueSongsFromLatestUris,
+              uris: uniqueSongsFromMostListenedUris,
             });
-            // console.log(stringToCreatePlaylist);
             navigator.clipboard.writeText(stringToCreatePlaylist);
             notification.success({
               message: 'Copied to clipboard',
