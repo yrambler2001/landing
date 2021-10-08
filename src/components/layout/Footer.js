@@ -15,7 +15,7 @@ export default function DefaultFooter() {
             </span>
             by yrambler2001
             <br />
-            Copyright © 2001-2021 - All Right Reserved
+            Copyright © 2001-2021 - All Rights Reserved
           </small>
         </div>
       </footer>
