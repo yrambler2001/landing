@@ -18,12 +18,13 @@
     "test": "craco test"
   },
   "dependencies": {
-    "@ant-design/icons": "^4.6.2",
+    "@ant-design/icons": "4.6.2",
     "@apollo/react-hooks": "3.1.5",
     "@craco/craco": "6.0.0",
-    "@nivo/bar": "^0.72.0",
-    "@nivo/core": "^0.72.0",
-    "@rehooks/component-size": "^1.0.3",
+    "@nivo/bar": "0.72.0",
+    "@nivo/core": "0.72.0",
+    "@nivo/line": "0.72.0",
+    "@rehooks/component-size": "1.0.3",
     "@testing-library/jest-dom": "5.11.4",
     "@testing-library/react": "11.1.0",
     "@testing-library/user-event": "12.1.10",
@@ -37,11 +38,12 @@
     "apollo-link-http": "1.5.17",
     "classnames": "2.2.6",
     "craco-less": "1.17.0",
-    "d3-scale-chromatic": "^1.5.0",
+    "d3-scale-chromatic": "1.5.0",
     "graphql": "15.0.0",
     "graphql-tag": "2.10.3",
+    "highcharts": "9.3.2",
     "http-proxy-middleware": "1.0.6",
-    "interactjs": "^1.10.11",
+    "interactjs": "1.10.11",
     "lodash": "4.17.20",
     "moment": "2.29.1",
     "nivo": "0.31.0",
@@ -57,6 +59,7 @@
     "react-router-dom": "5.2.0",
     "react-scripts": "4.0.1",
     "serialize-error": "8.0.1",
+    "simplify-js": "^1.2.4",
     "web-vitals": "0.2.4"
   },
   "eslintConfig": {
@@ -100,7 +103,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged && npm run merge-i18n-git-add"
+      "pre-commit": "lint-staged"
     }
   },
   "lint-staged": {
