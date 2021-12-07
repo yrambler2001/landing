@@ -43,15 +43,18 @@ export default function Air() {
         .toDate(),
     [date],
   );
-  const { data, loading } = useQuery(query, {
+  const { data: newData } = useQuery(query, {
     variables: { from: startDate, to: endDate },
   });
+  const fetchedData = useRef();
+  fetchedData.current = newData || fetchedData.current;
+  const data = fetchedData.current;
   const ref = useRef();
   const { width: actualWidth } = useComponentSize(ref);
   const width = Math.min(actualWidth, 1700);
   return (
     <div ref={ref} className="container" style={{ overflow: 'hidden' }}>
-      {loading ? (
+      {!fetchedData.current ? (
         'loading...'
       ) : (
         <div>
@@ -61,6 +64,7 @@ export default function Air() {
           <div className="margin-bottom-10" />
           <div>
             <Line
+              key={width}
               {...{
                 width,
                 height: width * 0.4,
