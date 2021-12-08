@@ -81,7 +81,7 @@ export default function Air() {
                 },
                 {
                   id: 'temp',
-                  data: data.co2Data.items.map((e) => ({ x: new Date(e.date), y: (e.temp - 11) * 60 })),
+                  data: data.co2Data.items.map((e) => ({ x: new Date(e.date), y: (e.temp - 9) * 60 })),
                 },
               ]}
               xScale={{
@@ -135,7 +135,7 @@ export default function Air() {
                       {point.point.serieId === 'temp' ? (
                         <span>
                           <strong>{moment(point.point.data?.x).format('HH:mm')}</strong>,
-                          <strong>{point.point.data.y / 60 + 11}</strong> °C
+                          <strong>{point.point.data.y / 60 + 9}</strong> °C
                         </span>
                       ) : (
                         <span>
